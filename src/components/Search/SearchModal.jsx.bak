@@ -1,0 +1,724 @@
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { 
+  MagnifyingGlassIcon, 
+  XMarkIcon, 
+  MicrophoneIcon,
+  ClockIcon
+} from '@heroicons/react/24/outline';
+import { COLORS } from '@/constants/colors';
+import debounce from 'lodash/debounce';
+
+const MAX_RECENT_SEARCHES = 5;
+const SEARCH_HISTORY_KEY = 'sofdeco_recent_searches';
+
+export const SearchModal = ({ isOpen, onClose }) => {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [selectedResultIndex, setSelectedResultIndex] = useState(-1);
+  const [recentSearches, setRecentSearches] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+  const [isListening, setIsListening] = useState(false);
+  const searchInputRef = useRef(null);
+
+  // Load recent searches from localStorage
+  useEffect(() => {
+    const savedSearches = localStorage.getItem(SEARCH_HISTORY_KEY);
+    if (savedSearches) {
+      setRecentSearches(JSON.parse(savedSearches));
+    }
+  }, []);
+
+  // Save recent searches to localStorage
+  const saveRecentSearch = (query) => {
+    if (!query.trim()) return;
+    
+    const updatedSearches = [
+      query,
+      ...recentSearches.filter(item => item !== query)
+    ].slice(0, MAX_RECENT_SEARCHES);
+    
+    setRecentSearches(updatedSearches);
+    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updatedSearches));
+  };
+
+  // Voice search setup
+  const startVoiceSearch = () => {
+    if (!('webkitSpeechRecognition' in window)) {
+      alert('Voice search is not supported in your browser');
+      return;
+    }
+
+    const recognition = new window.webkitSpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'fr-FR'; // Set language to French
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setSearchQuery(transcript);
+      handleSearch(transcript);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error', event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  };
+
+  // Generate search suggestions
+  const generateSuggestions = useCallback(
+    debounce((query) => {
+      if (!query.trim()) {
+        setSuggestions([]);
+        return;
+      }
+
+      // Get the input without any modifiers
+      const input = query.toLowerCase().trim();
+
+      // Define all possible suggestions by category
+      const allSuggestions = {
+        't': [ // Tables, Tabourets
+          'table en bois massif',
+          'table avec rallonge',
+          'table design moderne',
+          'tabouret de bar',
+          'table basse salon'
+        ],
+        'c': [ // Canapés, Chaises
+          'canapé en velours',
+          'canapé convertible',
+          'canapé d\'angle',
+          'chaise rembourrée',
+          'chaise scandinave'
+        ],
+        'l': [ // Lits, Lampes
+          'lit avec rangement',
+          'lit king size',
+          'lit superposé',
+          'lampe LED design',
+          'lampe de bureau'
+        ],
+        'm': [ // Meubles
+          'meuble tv design',
+          'meuble de rangement',
+          'meuble sur mesure',
+          'miroir décoratif',
+          'meuble d\'entrée'
+        ],
+        'a': [ // Armoires
+          'armoire coulissante',
+          'armoire dressing',
+          'armoire 2 portes',
+          'armoire penderie',
+          'armoire vintage'
+        ],
+        'b': [ // Bureaux, Bibliothèques
+          'bureau angle',
+          'bureau avec tiroirs',
+          'bureau ergonomique',
+          'bibliothèque moderne',
+          'buffet scandinave'
+        ],
+        'f': [ // Fauteuils
+          'fauteuil velours',
+          'fauteuil relax',
+          'fauteuil design',
+          'fauteuil scandinave',
+          'fauteuil pivotant'
+        ],
+        'e': [ // Étagères
+          'étagère murale',
+          'étagère industrielle',
+          'étagère flottante',
+          'étagère d\'angle',
+          'étagère bibliothèque'
+        ]
+      };
+
+      // Get suggestions based on first letter
+      let relevantSuggestions = [];
+      const firstLetter = input[0];
+      
+      if (allSuggestions[firstLetter]) {
+        relevantSuggestions = allSuggestions[firstLetter].filter(suggestion =>
+          suggestion.toLowerCase().includes(input)
+        );
+      }
+
+      // If no matches by first letter or input is longer, search all categories
+      if (relevantSuggestions.length === 0 && input.length > 1) {
+        relevantSuggestions = Object.values(allSuggestions)
+          .flat()
+          .filter(suggestion => suggestion.toLowerCase().includes(input))
+          .slice(0, 3);
+      }
+
+      // Limit to 3 suggestions
+      setSuggestions(relevantSuggestions.slice(0, 3));
+    }, 150),
+    []
+  );
+
+  // Handle search submission
+  const handleSearchSubmit = (query) => {
+    if (!query.trim()) return;
+    
+    // Save to recent searches
+    saveRecentSearch(query);
+    
+    // Close the search modal
+    onClose();
+    
+    // Navigate to shop page with search query
+    const searchQuery = query.trim();
+    navigate(`/shop?q=${encodeURIComponent(searchQuery)}`);
+  };
+
+  // Debounced search function for suggestions
+  const debouncedSearch = useCallback(
+    debounce(async (query) => {
+      if (!query.trim()) {
+        setSearchResults([]);
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+      
+      // For now, we'll just show a message that we're redirecting to search
+      setSearchResults([{ isRedirecting: true, query }]);
+      
+      // Save to recent searches
+      saveRecentSearch(query);
+      
+      // Auto-submit after a short delay to show the loading state
+      setTimeout(() => {
+        handleSearchSubmit(query);
+      }, 500);
+      
+    }, 500),
+    []
+  );
+
+  // Handle search input change
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    generateSuggestions(query);
+    if (query.trim()) {
+      debouncedSearch(query);
+    } else {
+      setSearchResults([]);
+    }
+  };
+
+  // Highlight matching text
+  const highlightMatch = (text, query) => {
+    if (!query.trim()) return text;
+
+    const regex = new RegExp(`(${query})`, 'gi');
+    const parts = text.split(regex);
+
+    return parts.map((part, i) => 
+      regex.test(part) ? (
+        <span key={i} className="bg-yellow-200">{part}</span>
+      ) : (
+        part
+      )
+    );
+  };
+
+  const modalContent = (
+    <AnimatePresence>
+      {isOpen && (
+        <div 
+          className="fixed inset-0" 
+          style={{ 
+            zIndex: 99999,
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0
+          }}
+        >
+          {/* Overlay */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+            onClick={onClose}
+            style={{ zIndex: 99998 }}
+          />
+          
+          {/* Search Container */}
+          <div className="absolute inset-x-0 top-0 flex items-start justify-center" style={{ zIndex: 99999 }}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: -20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -20 }}
+              transition={{ 
+                type: "spring",
+                stiffness: 300,
+                damping: 30
+              }}
+              className="w-full max-w-2xl mt-20 mx-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+                <div className="p-6">
+                  {/* Search Input */}
+                  <form 
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (searchQuery.trim()) {
+                        handleSearchSubmit(searchQuery);
+                      }
+                    }}
+                    className="relative w-full flex items-center"
+                  >
+                    <MagnifyingGlassIcon 
+                      className="h-6 w-6 absolute left-4 transition-colors" 
+                      style={{ color: searchQuery ? COLORS.secondary : COLORS.text }}
+                    />
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      placeholder="Search for furniture..."
+                      value={searchQuery}
+                      onChange={(e) => handleSearch(e.target.value)}
+                      className="w-full pl-12 pr-24 py-4 bg-gray-50/50 border-2 rounded-xl focus:outline-none transition-all duration-300"
+                      style={{ 
+                        borderColor: searchQuery ? COLORS.secondary : 'rgba(229, 231, 235, 0.5)',
+                        color: COLORS.text
+                      }}
+                      autoFocus
+                    />
+                    <div className="absolute right-4 flex items-center space-x-2">
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={startVoiceSearch}
+                        className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${
+                          isListening ? 'animate-pulse' : ''
+                        }`}
+                        style={{ 
+                          color: isListening ? COLORS.secondary : COLORS.text
+                        }}
+                      >
+                        <MicrophoneIcon className="h-5 w-5" />
+                      </motion.button>
+                      {searchQuery && (
+                        <motion.button
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          onClick={() => {
+                            setSearchQuery('');
+                            setSearchResults([]);
+                            setSuggestions([]);
+                            searchInputRef.current?.focus();
+                          }}
+                          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                          style={{ color: COLORS.text }}
+                        >
+                          <XMarkIcon className="h-5 w-5" />
+                        </motion.button>
+                      )}
+                    </div>
+                  </form>
+
+                  {/* Enhanced Search Suggestions */}
+                  <AnimatePresence>
+                    {suggestions.length > 0 && searchQuery && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="mt-2"
+                      >
+                        <div className="space-y-1">
+                          {suggestions.map((suggestion, index) => (
+                            <motion.button
+                              key={suggestion}
+                              type="button"
+                              whileHover={{ 
+                                backgroundColor: 'rgba(197, 160, 92, 0.05)',
+                                x: 4 
+                              }}
+                              className="w-full text-left px-4 py-3 rounded-lg transition-all flex items-center space-x-2 group hover:shadow-sm"
+                              onClick={() => {
+                                setSearchQuery(suggestion);
+                                handleSearchSubmit(suggestion);
+                              }}
+                            >
+                              <MagnifyingGlassIcon className="h-4 w-4 text-gray-400 group-hover:text-[#C5A05C] flex-shrink-0" />
+                              <span className="text-gray-600 group-hover:text-[#C5A05C]">
+                                {highlightMatch(suggestion, searchQuery)}
+                              </span>
+                            </motion.button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Recent Searches */}
+                  <AnimatePresence>
+                    {recentSearches.length > 0 && !searchQuery && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="mt-4"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="text-sm font-medium text-gray-500">Recent Searches</h3>
+                          <button
+                            className="text-sm text-gray-400 hover:text-gray-600"
+                            onClick={() => {
+                              setRecentSearches([]);
+                              localStorage.removeItem(SEARCH_HISTORY_KEY);
+                            }}
+                          >
+                            Clear
+                          </button>
+                        </div>
+                        <div className="space-y-1">
+                          {recentSearches.map((query, index) => (
+                            <motion.button
+                              key={query}
+                              whileHover={{ x: 4 }}
+                              className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2"
+                              onClick={() => handleSearch(query)}
+                            >
+                              <ClockIcon className="h-4 w-4 text-gray-400" />
+                              <span className="text-gray-600">{query}</span>
+                            </motion.button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+
+                </div>
+
+                {/* Search Results */}
+                <AnimatePresence>
+                  {searchQuery && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="border-t border-gray-100">
+                        {isLoading ? (
+                          <div className="p-8 text-center">
+                            <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-secondary" />
+                            <p className="mt-2 text-gray-500">Searching for "{searchQuery}"...</p>
+                          </div>
+                        ) : error ? (
+                          <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="p-8 text-center"
+                          >
+                            <ExclamationCircleIcon className="mx-auto h-12 w-12 text-red-400" />
+                            <p className="mt-2 text-red-600">Error loading search results. Please try again.</p>
+                          </motion.div>
+                        ) : searchResults.length > 0 ? (
+                          searchResults.map((result, index) => (
+                            <motion.div
+                              key={result.id}
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className={`group p-4 hover:bg-gray-50/80 transition-colors cursor-pointer flex items-center space-x-4 ${
+                                index === selectedResultIndex ? 'bg-gray-50' : ''
+                              }`}
+                              onClick={() => window.location.href = `/product/${result.id}`}
+                            >
+                              <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 group-hover:shadow-md transition-shadow flex-shrink-0">
+                                <img
+                                  src={result.image}
+                                  alt={result.name}
+                                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                                />
+                                {!result.inStock && (
+                                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                      <span className="text-white text-xs font-medium">Out of Stock</span>
+                                    </div>
+                                  )}
+                                  {result.discount > 0 && (
+                                    <div className="absolute top-0 right-0 bg-[#C5A05C] text-white text-xs font-medium px-2 py-1">
+                                      -{result.discount}%
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h3 
+                                    className="font-medium text-lg group-hover:text-[#C5A05C] transition-colors truncate"
+                                    style={{ color: COLORS.text }}
+                                  >
+                                    {highlightMatch(result.name, searchQuery)}
+                                  </h3>
+                                  <div className="flex items-center space-x-2 mt-1">
+                                    <p 
+                                      className="text-sm font-semibold"
+                                      style={{ color: COLORS.secondary }}
+                                    >
+                                      ${result.price}
+                                    </p>
+                                    {result.discount > 0 && (
+                                      <>
+                                        <span className="text-gray-300">•</span>
+                                        <p className="text-sm text-gray-400 line-through">
+                                          ${(result.price / (1 - result.discount / 100)).toFixed(2)}
+                                        </p>
+                                      </>
+                                    )}
+                                    <span className="text-gray-300">•</span>
+                                    <p className="text-sm text-gray-500 truncate">
+                                      {result.category}
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center space-x-2 mt-1">
+                                    <div className="flex items-center">
+                                      {[...Array(5)].map((_, i) => (
+                                        <svg
+                                          key={i}
+                                          className={`w-4 h-4 ${
+                                            i < Math.floor(result.rating)
+                                              ? 'text-yellow-400'
+                                              : 'text-gray-300'
+                                          }`}
+                                          fill="currentColor"
+                                          viewBox="0 0 20 20"
+                                        >
+                                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                      ))}
+                                    </div>
+                                    <span className="text-sm text-gray-500">
+                                      ({result.reviews})
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+                                    {highlightMatch(result.description, searchQuery)}
+                                  </p>
+                                </div>
+                                <motion.div 
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.95 }}
+                                >
+                                  <div 
+                                    className="p-2 rounded-full"
+                                    style={{ color: COLORS.secondary }}
+                                  >
+                                    →
+                                  </div>
+                                </motion.div>
+                              </motion.div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="p-8 text-center">
+                            <p style={{ color: COLORS.text }}>
+                              No results found for "{searchQuery}"
+                            </p>
+                            <p className="text-sm text-gray-500 mt-2">
+                              Try adjusting your search terms or filters
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+
+  // Single modal content definition
+  const modalContent = (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50">
+          {/* Overlay */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+            onClick={onClose}
+          />
+          
+          {/* Search Container */}
+          <div className="absolute inset-x-0 top-0 flex items-start justify-center pt-20 px-4">
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="w-full max-w-2xl bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
+                {/* Search Input */}
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (searchQuery.trim()) {
+                      handleSearchSubmit(searchQuery);
+                    }
+                  }}
+                  className="relative w-full flex items-center"
+                >
+                  <MagnifyingGlassIcon 
+                    className="h-6 w-6 absolute left-4 transition-colors" 
+                    style={{ color: searchQuery ? COLORS.secondary : COLORS.text }}
+                  />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="Search for furniture..."
+                    value={searchQuery}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    className="w-full pl-12 pr-24 py-4 bg-gray-50/50 border-2 rounded-xl focus:outline-none transition-all duration-300"
+                    style={{ 
+                      borderColor: searchQuery ? COLORS.secondary : 'rgba(229, 231, 235, 0.5)',
+                      color: COLORS.text
+                    }}
+                    autoFocus
+                  />
+                  <div className="absolute right-4 flex items-center space-x-2">
+                    <motion.button
+                      type="button"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={startVoiceSearch}
+                      className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${
+                        isListening ? 'animate-pulse' : ''
+                      }`}
+                      style={{ 
+                        color: isListening ? COLORS.secondary : COLORS.text
+                      }}
+                    >
+                      <MicrophoneIcon className="h-5 w-5" />
+                    </motion.button>
+                    {searchQuery && (
+                      <motion.button
+                        type="button"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        onClick={() => {
+                          setSearchQuery('');
+                          setSearchResults([]);
+                          setSuggestions([]);
+                          searchInputRef.current?.focus();
+                        }}
+                        className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                        style={{ color: COLORS.text }}
+                      >
+                        <XMarkIcon className="h-5 w-5" />
+                      </motion.button>
+                    )}
+                  </div>
+                </form>
+
+                {/* Search Results */}
+                <AnimatePresence>
+                  {searchQuery && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="mt-4"
+                    >
+                      {isLoading ? (
+                        <div className="p-8 text-center">
+                          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-secondary" />
+                          <p className="mt-2 text-gray-500">Searching for "{searchQuery}"...</p>
+                        </div>
+                      ) : null}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Recent Searches */}
+                <AnimatePresence>
+                  {recentSearches.length > 0 && !searchQuery && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="mt-4"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-sm font-medium text-gray-500">Recent Searches</h3>
+                        <button
+                          type="button"
+                          className="text-sm text-gray-400 hover:text-gray-600"
+                          onClick={() => {
+                            setRecentSearches([]);
+                            localStorage.removeItem(SEARCH_HISTORY_KEY);
+                          }}
+                        >
+                          Clear
+                        </button>
+                      </div>
+                      <div className="space-y-1">
+                        {recentSearches.map((query, index) => (
+                          <motion.button
+                            key={index}
+                            type="button"
+                            whileHover={{ x: 4 }}
+                            className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2"
+                            onClick={() => handleSearchSubmit(query)}
+                          >
+                            <ClockIcon className="h-4 w-4 text-gray-400" />
+                            <span className="text-gray-600">{query}</span>
+                          </motion.button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+
+  return createPortal(modalContent, document.body);
+};

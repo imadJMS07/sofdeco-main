@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="280" height="32" viewBox="0 0 280 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Visa Card -->
+  <g transform="translate(0,0)">
+    <rect x="2" y="2" width="60" height="28" rx="4" fill="white" stroke="#E2E8F0" stroke-width="1"/>
+    <path d="M15 12L25 12L27 20H17L15 12Z" fill="#1A1F71"/>
+    <path d="M19 8L29 8L31 16H21L19 8Z" fill="#F79E1B"/>
+    <text x="31" y="20" font-family="Arial" font-size="14" font-weight="bold" fill="#1A1F71">VISA</text>
+  </g>
+
+  <!-- Mastercard -->
+  <g transform="translate(70,0)">
+    <rect x="2" y="2" width="60" height="28" rx="4" fill="white" stroke="#E2E8F0" stroke-width="1"/>
+    <circle cx="25" cy="16" r="10" fill="#EB001B" opacity="0.9"/>
+    <circle cx="35" cy="16" r="10" fill="#F79E1B" opacity="0.9"/>
+    <path d="M30 8A10 10 0 0 0 30 24A10 10 0 0 0 30 8" fill="#FF5F00"/>
+  </g>
+
+  <!-- PayPal -->
+  <g transform="translate(140,0)">
+    <rect x="2" y="2" width="60" height="28" rx="4" fill="white" stroke="#E2E8F0" stroke-width="1"/>
+    <path d="M20 8h24c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H20c-1.1 0-2-.9-2-2V10c0-1.1.9-2 2-2z" fill="#003087"/>
+    <text x="31" y="20" font-family="Arial" font-size="12" font-weight="bold" fill="white">PayPal</text>
+  </g>
+
+  <!-- Apple Pay -->
+  <g transform="translate(210,0)">
+    <rect x="2" y="2" width="60" height="28" rx="4" fill="white" stroke="#E2E8F0" stroke-width="1"/>
+    <path d="M20 8C25.5 8 30 12.5 30 18C30 23.5 25.5 28 20 28C14.5 28 10 23.5 10 18C10 12.5 14.5 8 20 8Z" fill="black"/>
+    <text x="31" y="20" font-family="Arial" font-size="11" font-weight="bold" fill="black">Apple Pay</text>
+  </g>
+</svg> 

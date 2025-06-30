@@ -1,0 +1,596 @@
+{
+	"info": {
+		"_postman_id": "8a1935d0-5f2b-47d3-a222-8dcb1608dc3c",
+		"name": "SOFDECO",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33148359",
+		"_collection_link": "https://cosmomediatech.postman.co/workspace/Nexus~65cef139-75ba-43ab-8e73-b27c25d66cf4/collection/24885718-8a1935d0-5f2b-47d3-a222-8dcb1608dc3c?action=share&source=collection_link&creator=33148359"
+	},
+	"item": [
+		{
+			"name": "PRODUCTS",
+			"item": [
+				{
+					"name": "Get Products",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL2F1dGgvbG9naW4iLCJpYXQiOjE3NDc2NTIyNzMsImV4cCI6MTc0NzY1NTg3MywibmJmIjoxNzQ3NjUyMjczLCJqdGkiOiJHVm05V3ZyWkVraDNKU2laIiwic3ViIjoiMTIiLCJwcnYiOiIyM2JkNWM4OTQ5ZjYwMGFkYjM5ZTcwMWM0MDA4NzJkYjdhNTk3NmY3In0.TrDzhd0m0GOQeI9oSn_0GrV9tkv1G6cNuwjbuZw5Iak",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/products?page=1&size=1&sortBy=name&direction=desc",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "1"
+								},
+								{
+									"key": "sortBy",
+									"value": "name"
+								},
+								{
+									"key": "direction",
+									"value": "desc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search by Name",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL2F1dGgvbG9naW4iLCJpYXQiOjE3NDc2NTIyNzMsImV4cCI6MTc0NzY1NTg3MywibmJmIjoxNzQ3NjUyMjczLCJqdGkiOiJHVm05V3ZyWkVraDNKU2laIiwic3ViIjoiMTIiLCJwcnYiOiIyM2JkNWM4OTQ5ZjYwMGFkYjM5ZTcwMWM0MDA4NzJkYjdhNTk3NmY3In0.TrDzhd0m0GOQeI9oSn_0GrV9tkv1G6cNuwjbuZw5Iak",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/products/search?name=dddd",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"products",
+								"search"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "dddd"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter by Category",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/products/category?category_id=23",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"products",
+								"category"
+							],
+							"query": [
+								{
+									"key": "category_id",
+									"value": "23"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter by Price Range",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/products/price-range?min_price=20&max_price=50",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"products",
+								"price-range"
+							],
+							"query": [
+								{
+									"key": "min_price",
+									"value": "20"
+								},
+								{
+									"key": "max_price",
+									"value": "50"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter by Rating",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/products/rating?rating=2",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"products",
+								"rating"
+							],
+							"query": [
+								{
+									"key": "rating",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter by Availability",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/products/available",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"products",
+								"available"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "AUTHENTICATION",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();\r",
+									"pm.globals.set(\"authorization\",\"Bearer \" + jsonData.token);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\":\"sofdeco2@gmail.com\",\r\n    \"password\":\"sofdeco2@gmail.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/auth/login",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ORDERS",
+			"item": [
+				{
+					"name": "Create orders",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"John Doe\",\r\n    \"email\":\"imad.jamoussi07@gmail.com\",\r\n    \"phone\": \"+1234567890\",\r\n    \"address\": \"123 Main St, Anytown,USA\",\r\n    \"total_price\": \"69.98\",\r\n    \"products\": [\r\n        {\r\n            \"product_id\": 75,\r\n            \"quantity\": 2\r\n        },\r\n        {\r\n            \"product_id\": 76,\r\n            \"quantity\": 1\r\n        }\r\n    ]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/orders",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Orders",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/orders",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTkyLjE2OC4xMS4xMDU6ODAwMC9hcGkvYXV0aC9sb2dpbiIsImlhdCI6MTc0NzY2MDAwNSwiZXhwIjoxNzQ3NjYzNjA1LCJuYmYiOjE3NDc2NjAwMDUsImp0aSI6IlpINUI0OEhwS0xsWDNaZEYiLCJzdWIiOiIxMiIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"status\": \"completed\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/orders/17/status",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"orders",
+								"17",
+								"status"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "REVIEWS",
+			"item": [
+				{
+					"name": "Create Reviews",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"reviewer_name\": \"John Doe\",\r\n  \"reviewer_email\": \"john@example.com\",\r\n  \"review\": \"Great product!\",\r\n  \"rating\": 5\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/products/23/reviews",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"products",
+								"23",
+								"reviews"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Reviews By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/products/23/reviews",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"products",
+								"23",
+								"reviews"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "CLIENTS",
+			"item": [
+				{
+					"name": "Send mail to customers",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"subject\": \"New Product Added 🚀\",\r\n  \"message\": \"Hey there! We’ve just added an amazing new product to our catalog. Check it out now!\",\r\n  \"users\": [\r\n    \"loyew96767@neuraxo.com\",\r\n    \"imad.jamoussi07@gmail.com\",\r\n    \"henah87871@neuraxo.com\"\r\n  ]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/send-multi-user-mail",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"send-multi-user-mail"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Clients",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/clients",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"clients"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "BLOGS",
+			"item": [
+				{
+					"name": "Get Blogs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/blogs",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"blogs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Blogs",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "id",
+									"value": "5",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "title",
+									"value": "UPDATE",
+									"type": "text"
+								},
+								{
+									"key": "content",
+									"value": "This is the full content of blog post",
+									"type": "text"
+								},
+								{
+									"key": "category",
+									"value": "Tech",
+									"type": "text"
+								},
+								{
+									"key": "tags",
+									"value": "laravel,api,backend",
+									"type": "text"
+								},
+								{
+									"key": "status",
+									"value": "published",
+									"type": "text"
+								},
+								{
+									"key": "image",
+									"type": "file",
+									"src": "postman-cloud:///1ef71e54-c6f0-4b50-bbae-543d7bf35d27"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{URL}}/blogs/5",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"blogs",
+								"5"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Contact",
+			"item": [
+				{
+					"name": "Create contact",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTkyLjE2OC4xMS4xMDI6ODAwMC9hcGkvYXV0aC9sb2dpbiIsImlhdCI6MTc0NzgzNzcyMSwiZXhwIjoxNzQ3ODQxMzIxLCJuYmYiOjE3NDc4Mzc3MjEsImp0aSI6InlsNk00NjZ1VFRJVEh6cXYiLCJzdWIiOiIxMiIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.tiJO5p_eS69JAkAARwuXSZ_8U1zvbPMlcgL7Fe0pIjw",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"john@example.com\",\r\n    \"phone\": \"123456789\",\r\n    \"address\": \"123 Main St\",\r\n    \"working_hours\": \"8AM - 6PM\",\r\n    \"facebook_link\": \"https://whatsapp.com/john\",\r\n    \"instagram_link\": \"https://whatsapp.com/john\",\r\n    \"location_link\": \"https://whatsapp.com/john\",\r\n    \"whatsapp_link\":\"https://whatsapp.com/john\"\r\n    \r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/contacts",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"contacts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get contact",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/contacts",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"contacts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Contact",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"phone\": \"123456789\",\r\n    \"address\": \"123 Main StUPDATE\",\r\n    \"workingHours\": \"AMPM\",\r\n    \"facebook_link\": \"https://whatsapp.com/john\",\r\n    \"instagram_link\": \"https://whatsapp.com/john\",\r\n    \"location_link\": \"https://whatsapp.com/john\",\r\n    \"whatsapp_link\":\"https://whatsapp.com/john\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/contacts/1",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"contacts",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
